@@ -3,11 +3,11 @@
 # June 06, 2017
 # This script attempts to merge traits from  try_fia_traitmeans.csv and Traits_Stevens_FIA.xlsx
 
-# ============================================================================================
+
 # ============================================================================================
 # Step One: Read in the data and store it in an R object 
 # ============================================================================================
-# ============================================================================================
+
 
 # NOTE: You may have to change the working directory if your data file is in a different location. 
 setwd("/home/jay/Desktop/nasabio/")
@@ -28,11 +28,11 @@ traits_stevens_FIA <- read_excel("Traits_Stevens_FIA.xlsx", sheet = "Master", na
 # tree species. 
 try_data <- traits_stevens_FIA[,c(4,17:30)]
 
-# ============================================================================================
+
 # ============================================================================================
 # Step Two: Merge the columns without losing any data, using dplyr.                           
 # ============================================================================================
-# ============================================================================================
+
 library(dplyr)
 
 # Join the data frames and account for duplicate column names
@@ -47,6 +47,25 @@ all_traits <- full_join(fia_traitmeans, try_data, by = c("Scientific_Name",
                                                          "Stem dry mass per stem fresh volume (stem specific density, SSD, wood density)" = "SSD",
                                                          "Seed dry mass" = "Seed.dry.mass"
                                                          ))
+all_traits <- unique(all_traits %>% arrange(Scientific_Name))
+
+# ============================================================================================
+# Some helpful queries/commands. 
+# ============================================================================================
 
 # The following method merges the CSV files, but does not get rid of duplicate columns. 
 # test_merge <- merge(fia_traitmeans,try_data)
+
+# Shows duplicate species in Traits_Stevens_FIA.xlsx
+try_data[duplicated(try_data$Scientific_Name),]
+
+# Shows duplicate species in try_fia_traitmeans.csv
+fia_traitmeans[duplicated(fia_traitmeans$Scientific_Name),]
+
+
+#library(dplyr)
+# Shows try_data with Scientific_Name alphabetized
+alphabetized_try_data <- unique(try_data %>% arrange(Scientific_Name))
+
+
+
