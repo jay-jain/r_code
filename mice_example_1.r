@@ -1,8 +1,10 @@
 # Jay Jain
 # June 16, 2017
-# The structure of this script is taken heavily from the following source: https://www.r-bloggers.com/imputing-missing-data-with-r-mice-package/ 
-# TODO: troubleshoot xyplot and density plot.
+# The structure of this script is taken heavily from the following source: 
+# https://www.r-bloggers.com/imputing-missing-data-with-r-mice-package/ 
 # multivariate imputation by chained equations  (MICE)
+
+# TODO: troubleshoot xyplot and density plot.
 
 setwd("/home/jay/Desktop/nasabio/")
 
@@ -22,7 +24,7 @@ aggr_plot <- aggr(fia_traitmeans, col=c('navyblue','red'), numbers=TRUE, sortVar
 marginplot(fia_traitmeans[c(2,3)])
 
 # Note: I picked columns 15 and 17 because they had the least amount of missing values
-tempData <- mice(fia_traitmeans,m=5,maxit=50,meth='pmm',seed=500)
+tempData <- mice.mids(fia_traitmeans,m=5,maxit=50,meth='pmm',seed=500)
 summary(tempData)
 
 # See what method was used on the traits
@@ -32,9 +34,7 @@ tempData$meth
 #tempData$imp$`Plant tolerance to shade`
 #tempData$imp$`Seed dry mass`
 
-xyplot(tempData)
-
-#xyplot(tempData,`Plant tolerance to shade` ~ `Seed dry mass`,pch=18,cex=1)
+xyplot(tempData,tempData$imp$`Plant tolerance to shade` ~ tempData$imp$`Seed dry mass`,pch=18,cex=1)
 
 densityplot(tempData)
 
