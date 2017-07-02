@@ -44,3 +44,4 @@ ggplot(comparisondf, aes(x = interaction(species_id, trait_id))) +
                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
   geom_point(aes(y = true_trait), color = 'red', shape = 1)
 
+
