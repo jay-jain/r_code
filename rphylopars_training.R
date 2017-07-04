@@ -53,10 +53,35 @@ missingTraining$species[!spmatch]
 
 test_tree <- drop.tip(stevens_tree, tip = stevens_tree$tip.label[!stevens_tree$tip.label %in% missingTraining$species])
 
-phy_training <- phylopars(missingTraining,test_tree,model='OU')
+# make tree multi2di (collapse or resolve multichotomies in phylogenetic trees)
+test_tree <- multi2di(test_tree)
 
-# How many values are negative:
-sum(phy_training$anc_recon < 0)
+# Brownian Motion: 37 negative values
+phy_training_BM <- phylopars(missingTraining,test_tree,model='BM')
+
+# OU Method: 9 negative values
+phy_training_OU <- phylopars(missingTraining,test_tree,model='OU')
+
+# mvOU Method: throws error: $ operator is invalid for atomic vectors
+phy_training_mvOU <- phylopars(missingTraining,test_tree,model='mvOU')
+
+# lambda:16 missing values
+phy_training_lambda <- phylopars(missingTraining,test_tree,model='lambda')
+
+# kappa: 17 negative values
+phy_training_kappa <- phylopars(missingTraining,test_tree,model='kappa')
+
+# delta: throws Error: NaNs produced
+phy_training_delta <- phylopars(missingTraining,test_tree,model='delta')
+
+# EB: 37 misisng values
+phy_training_EB <- phylopars(missingTraining,test_tree,model='EB')
+
+# star: 9 negative values
+phy_training_star <- phylopars(missingTraining,test_tree,model='star')
+
+# How many values are negative: 
+sum(phy_training_star$anc_recon < 0)
 
 # Sample data from traitmeans
 test_data <- fia_traitmeans[sample(nrow(fia_traitmeans), 5), c(1, 16, 18, 19)]
@@ -93,11 +118,11 @@ comparisondf <- data.frame(imputed_trait = imputed_traits[is_missing],
 # Plot results. The red point is the "true" value. It should fall inside the confidence interval around the black point. It seems to perform pretty well for the fake data.
 # Confidence intervals are based on assumption of normal distribution.
 library(cowplot)
-ggplot(comparisondf, aes(x = species_id,xlab = "Species")) +
+ggplot(comparisondf, aes(x = species_id)) +
   facet_wrap(~ trait_id, scales = 'free') +
   geom_pointrange(aes(y = imputed_trait, 
                       ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
-  geom_point(aes(y = true_trait), color = 'red', shape = 1)
+  geom_point(aes(y = true_trait), color = 'red', shape = 3)
 
 
