@@ -43,7 +43,7 @@ log_training <- training
 log_training[,-1] <- log(log_training[,-1])
 
 # Remove values from log_Training
-missingLogTraining <- removeValues(log_training, proportion = 0.5)
+missingLogTraining <- removeValues(log_training, proportion = 0.2)
 
 ## Change first column names to 'species'
 colnames(missingLogTraining)[colnames(missingLogTraining) == 'Scientific_Name'] <- 'species'
@@ -60,33 +60,33 @@ phy_training_OU <- phylopars(missingLogTraining,test_tree,model='OU')
 ########  Imputations with using different techniques 
 ####################################################################################
 # Brownian Motion: 37 negative values
-phy_training_BM <- phylopars(missingTraining,test_tree,model='BM')
-
-# OU Method: 9 negative values
-phy_training_OU <- phylopars(missingTraining,test_tree,model='OU')
-
-# mvOU Method: throws error: $ operator is invalid for atomic vectors
-phy_training_mvOU <- phylopars(missingTraining,test_tree,model='mvOU')
-
-# lambda:16 missing values
-phy_training_lambda <- phylopars(missingTraining,test_tree,model='lambda')
-
-# kappa: 17 negative values
-phy_training_kappa <- phylopars(missingTraining,test_tree,model='kappa')
-
-# delta: throws Error: NaNs produced
-phy_training_delta <- phylopars(missingTraining,test_tree,model='delta')
-
-# EB: 37 misisng values
-phy_training_EB <- phylopars(missingTraining,test_tree,model='EB')
-
-# star: 9 negative values
-phy_training_star <- phylopars(missingTraining,test_tree,model='star')
-
-####################################################################################
-
-# How many values from imputed set are negative: 
-sum(phy_training_OU$anc_recon < 0)
+# phy_training_BM <- phylopars(missingTraining,test_tree,model='BM')
+# 
+# # OU Method: 9 negative values
+# phy_training_OU <- phylopars(missingTraining,test_tree,model='OU')
+# 
+# # mvOU Method: throws error: $ operator is invalid for atomic vectors
+# phy_training_mvOU <- phylopars(missingTraining,test_tree,model='mvOU')
+# 
+# # lambda:16 missing values
+# phy_training_lambda <- phylopars(missingTraining,test_tree,model='lambda')
+# 
+# # kappa: 17 negative values
+# phy_training_kappa <- phylopars(missingTraining,test_tree,model='kappa')
+# 
+# # delta: throws Error: NaNs produced
+# phy_training_delta <- phylopars(missingTraining,test_tree,model='delta')
+# 
+# # EB: 37 misisng values
+# phy_training_EB <- phylopars(missingTraining,test_tree,model='EB')
+# 
+# # star: 9 negative values
+# phy_training_star <- phylopars(missingTraining,test_tree,model='star')
+# 
+# ####################################################################################
+# 
+# # How many values from imputed set are negative: 
+# sum(phy_training_OU$anc_recon < 0)
 
 # Compare imputed values from the ancestral state reconstruction with the true means from which the fake data were generated.
 imputed_traits <- phy_training_OU$anc_recon[1:83,] # Get only rows from existing species, not the ancestral nodes species
@@ -184,7 +184,7 @@ g6<- ggplot(data = comparisondf[comparisondf$trait_id==6,],aes(x = speciesName[c
 library(grid)
 library(gridExtra)
 
-grid.arrange(g1, g2,g3,g4,g5,g6, ncol = 2, top = "Imputations with 95% CI at 50% Missing Values using Training Dataset\n",
+grid.arrange(g1, g2,g3,g4,g5,g6, ncol = 2, top = "Imputations with 95% CI at 90% Missing Values using Training Dataset\n",
              bottom = "Species names", left = "Trait values")
 #plot.new()
 #  legend(x = "bottom",inset = 0,
@@ -192,10 +192,29 @@ grid.arrange(g1, g2,g3,g4,g5,g6, ncol = 2, top = "Imputations with 95% CI at 50%
 #       col=c("black","red"), lwd=5, cex=.5, horiz = TRUE)
 
 #### Original
-ggplot(comparisondf, aes(x = interaction(species_id, trait_id))) +
-  geom_pointrange(aes(y = imputed_trait, 
-                      ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
-                      ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
-  geom_point(aes(y = true_trait), color = 'red', shape = 1)
+# ggplot(comparisondf, aes(x = interaction(species_id, trait_id))) +
+#   geom_pointrange(aes(y = imputed_trait, 
+#                       ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
+#                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
+#   geom_point(aes(y = true_trait), color = 'red', shape = 1)
 
+
+# Compute number of imputed values not in 95% confidence interval
+
+inBounds <- vector(mode = "logical",length = nrow(comparisondf))
+
+inBounds = 0
+outBounds = 0
+for(i in 1:nrow(comparisondf)){
+  ymin = comparisondf$imputed_trait[i] - 1.96 * sqrt(comparisondf$imputed_variance[i]) 
+  ymax = comparisondf$imputed_trait[i] + 1.96 * sqrt(comparisondf$imputed_variance[i])
+  
+  if(comparisondf$true_trait[i] > ymin & comparisondf$true_trait[i] < ymax){
+    inBounds = inBounds + 1
+  }else{
+    outBounds = outBounds + 1
+  }
+}
+
+outBounds/(inBounds + outBounds) * 100 
 
