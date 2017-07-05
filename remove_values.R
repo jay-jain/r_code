@@ -19,25 +19,24 @@ removeValues <- function (dataframe, proportion, rowWeight, colWeight){
       colWeight <- rep(1.0,6)
     }
     
-    # Create weightMatrix and fill in values based on rowWeight and colWeight
-    #weightMatrix <- Matrix(data=NA, nrow = 83, ncol = 6)
     weightVector <- vector(mode = "double",length = 498)
-    print(length(weightVector))
 
      i = 1
      for(j in 1:length(colWeight)){
         for(k in 1:length(rowWeight)){
           weightVector[i] <- rowWeight[k] * colWeight[j]
+          #print(rowWeight[k])
+          #print(colWeight[j])
           i = i + 1  
-
         }
       }
 
     print(weightVector)
     
+    # sample values based on weightVector
     matrix <- sample(x = 1:totalValues, size = numberOfValuesToRemove, replace = FALSE, prob = weightVector)
     
-    #print(length(matrix))
+    # Insert sampled values back into original dataframe as NA's 
     for(i in 1:length(matrix)){
       row <- row(dataframe)[matrix[i]]
       column <- col(dataframe)[matrix[i]] + 1 # Add one to column index to account for removing species column
@@ -46,7 +45,9 @@ removeValues <- function (dataframe, proportion, rowWeight, colWeight){
     return (dataframe)
 }
 
-missingTraining <- removeValues(training,proportion = 0.25,colWeight = c(.25,.25,.25,.25,.25,.35))
+missingTraining <- removeValues(dataframe = training, proportion = 0.05, colWeight = c(0.01,0.05,0.1,0.15,0.20,0.35))
+
+missingLogTraining <- removeValues(log_training,proportion = 0.1,colWeight = c(.25,.25,.25,.25,.25,.35))
 
 View(missingTraining)
 
