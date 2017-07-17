@@ -1,4 +1,4 @@
-training <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
+#training <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
 
 removeValues <- function (dataframe, proportion, rowWeight, colWeight){
     # Remove the first column so species names do not get removed
@@ -11,15 +11,15 @@ removeValues <- function (dataframe, proportion, rowWeight, colWeight){
     # Else if rowWeight is not specified, but colWeight is specified, then set rowWeight to 1.0
     # Else if colWeight is not specififed, but RowWeight is specified, then set colWeight to 1.0
     if (missing(rowWeight) & missing(colWeight)){
-      rowWeight <- rep(1.0,83)
-      colWeight <- rep(1.0,6)
+      rowWeight <- rep(1.0,nrow(alteredDataFrame))
+      colWeight <- rep(1.0,ncol(alteredDataFrame))
     }else if(missing(rowWeight) & !missing(colWeight))
-      rowWeight <- rep(1.0,83)
+      rowWeight <- rep(1.0,nrow(alteredDataFrame))
     else{
-      colWeight <- rep(1.0,6)
+      colWeight <- rep(1.0,ncol(alteredDataFrame))
     }
     
-    weightVector <- vector(mode = "double",length = 498)
+    weightVector <- vector(mode = "double",length = totalValues)
 
      i = 1
      for(j in 1:length(colWeight)){
@@ -45,12 +45,12 @@ removeValues <- function (dataframe, proportion, rowWeight, colWeight){
     return (dataframe)
 }
 
-missingTraining <- removeValues(dataframe = training, proportion = 0.05, colWeight = c(0.01,0.05,0.1,0.15,0.20,0.35))
+#missingTraining <- removeValues(dataframe = training, proportion = 0.05, colWeight = c(0.01,0.05,0.1,0.15,0.20,0.35))
 
-missingLogTraining <- removeValues(log_training,proportion = 0.1,colWeight = c(.25,.25,.25,.25,.25,.35))
+#missingLogTraining <- removeValues(log_training,proportion = 0.1,colWeight = c(.25,.25,.25,.25,.25,.35))
 
-View(missingTraining)
+#View(missingTraining)
 
 # Show number of NA's in each trait column
-colSums(is.na(missingTraining[,2:7]))
+#colSums(is.na(missingTraining[,2:7]))
 

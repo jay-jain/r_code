@@ -37,7 +37,7 @@ sort(sapply(fia_traitmeans, function(x) sum(is.na(x))), decreasing = FALSE)
 #mean(fia_traitmeans$`Rooting depth`, na.rm = TRUE)
 #mean(fia_traitmeans$`Seed dry mass`, na.rm = TRUE)
 
-init = mice(fia_traitmeans,maxit=0,method="pmm")
+init = mice(fia_traitmeans,maxit=50,method="pmm")
 meth = init$method
 predM = init$predictorMatrix
 set.seed(103)
@@ -51,8 +51,8 @@ imputed <- complete(imputed)
 # Check for missing data in dataset
 sapply(imputed, function(x) sum(is.na(x)))
 
-#hist(imputed, main='Distribution of missing values for tree traits after imputation', 
-#     xlab = 'Percent missing values', ylab = 'Trait columns', border = 'black', col='pink')
+hist(imputed, main='Distribution of missing values for tree traits after imputation', 
+     xlab = 'Percent missing values', ylab = 'Trait columns', border = 'black', col='pink')
 
 #plot(imputed)
 
