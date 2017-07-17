@@ -31,7 +31,6 @@ summ_fit_2$summary[grep('beta', row.names(summ_fit_2$summary)),]
 
 head(summ_fit_2$summary)
 
-
 # Diagnostic plots to make sure the models converged
 stan_diag(trait_fit_missing_2)
 
