@@ -129,9 +129,24 @@ rphylopars_rmse <- function(dat, phy) {
   
 }
 
-rphylo_RMSEs <- pblapply(missing_datasets, rphylopars_rmse, phy = species_phylogeny)
+# rphylo_RMSEs <- pblapply(missing_datasets, rphylopars_rmse, phy = species_phylogeny)
 
-save(rphylo_RMSEs, file = '/home/jay/Desktop/rphylo_RMSE.csv')
+rphylo_RMSEs <- list()
+
+progressBar <- txtProgressBar(0,n_datasets,style=3)
+
+for (i in 1:n_datasets) {
+  setTxtProgressBar(progressBar,i)
+  rphylo_RMSEs[[i]] <- try(rphylopars_rmse(dat = missing_datasets[[i]],
+                                           phy = species_phylogeny), TRUE)
+  if (inherits(rphylo_RMSEs[[i]], 'try-error')) rphylo_RMSEs[[i]] <-
+      c('overall'=NA, 'Bark.thickness'=NA, 'Wood.density'=NA,
+        'Specific.leaf.area'=NA, 'Plant.height'=NA, 'Plant.lifespan'=NA,
+        'Seed.dry.mass'=NA)
+}
+close(progressBar)
+
+save(rphylo_RMSEs, file = '/home/jay/Desktop/rphylo_RMSE.R')
 
 # 4. load stan fits and get rmses from them -------------------------------
 
@@ -140,8 +155,12 @@ save(rphylo_RMSEs, file = '/home/jay/Desktop/rphylo_RMSE.csv')
 
 # 5. Combine RMSEs into data frame and plot -------------------------------
 
+
 mice_RMSEs <- do.call(rbind, mice_RMSEs)
 rphylo_RMSEs <- do.call(rbind, rphylo_RMSEs)
+
+mice_RMSEs <- as.data.frame(mice_RMSEs)
+rphylo_RMSEs <- as.data.frame(rphylo_RMSEs)
 # stan rmses will be added here when ready.
 
 library(reshape2)
@@ -157,4 +176,14 @@ library(cowplot)
 # For now, plot just the overall results. Might also be worth looking at the plots for the individual trait results as well.
 ggplot(subset(RMSE_data, trait == 'overall'), aes(x = method, y = RMSE)) +
   geom_boxplot() +
+  labs(x = 'Imputation method', y = 'Root mean squared error')
+
+# Plot as density
+ggplot(subset(RMSE_data, trait == 'overall'), aes(x = RMSE, group=method, color=method)) +
+  geom_density() +
+  scale_y_continuous(expand=c(0,0)) +
+  labs(x  = 'Root mean squared error')
+
+ggplot(subset(RMSE_data, trait != 'overall'), aes(x = method, y = RMSE)) +
+  geom_boxplot() + facet_wrap(~ trait, scales = 'free_y') +
   labs(x = 'Imputation method', y = 'Root mean squared error')

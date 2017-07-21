@@ -13,7 +13,6 @@ traitmissing_model <- stan_model(file = 'imputation/phylo_spatial_missing.stan')
 # Source script to load all the trait and predictor data from the nasabio space on the hpcc
 source('imputation/loadtraitsandpredictors.r')
 
-# Source functions to make Stan data from GitHub
 source('imputation/makestandata.r')
 
 trait_data_list <- make_standatalist(traitdat = species_traits, predictors = species_covariates, phy = species_phylogeny, evolution_model = 'ou')
