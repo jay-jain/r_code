@@ -1,0 +1,35 @@
+#!/bin/bash --login
+#PBS -l nodes=1:ppn=1,walltime=00:24:00:00,mem=4gb
+#PBS -l feature=gbe
+#PBS -j oe
+#PBS -N stan_job_50
+#PBS -m n
+#PBS -t 1-4
+
+
+# first, switch to the directory from which is qsub was submitted
+cd /mnt/home/f0002182/stan_code
+
+
+module load GNU/6.2
+
+#echo PBS env variables
+#env | grep PBS
+
+# output information about how this job is running
+echo "This job is running on $HOSTNAME on `date`"
+# run the "hello" program in this directory
+./phylo_spatial_trait sample num_samples=15000 num_warmup=5000 thin=5 data file=./trait_data_list4.R init=1 output file=./stan_output${PBS_ARRAYID}.csv
+
+
+# output details
+echo "details of the job and queue"
+echo ---------
+
+qstat -f ${PBS_JOBID}
+
+#echo PBS env variables
+#env | grep PBS
+
+
+

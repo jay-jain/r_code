@@ -13,12 +13,11 @@ data {
 	matrix[m*N, m*n] Z;	// Design matrix to map individuals to the proper species
 	matrix[n, n] R;		// Phylogenetic variance-covariance matrix
 
-
 }
 
 transformed data {
 	matrix[m*N, m*N] ImN;	// identity matrix dimension m*N
-	matrix[m, m] Im;	// identity matrix dimension m
+	matrix[m, m] Im;		// identity matrix dimension m
 	vector[m*n] zero_mn;	// vector of zeroes m*n long
 	vector[m*N] zero_mN;	// vector of zeroes m*N long
 	
@@ -29,12 +28,12 @@ transformed data {
 }
 
 parameters {
-	vector[p] beta;			// Vector of coefficients on environmental predictors (fixed effects)
-	vector[m*n] alpha;		// Vector of random effects
+	real[p] beta;			// Vector of coefficients on environmental predictors (fixed effects)
+	real[m*n] alpha;		// Vector of random effects
 	matrix[m*N, m*N] epsilon;	// Error term. Each individual gets its own error for now.
 
 	matrix[m, m] Sigma;		// Trait variance-covariance matrix, to be estimated.
-	matrix[m,N] sigma;		// Hyperprior on error term
+	real[m*N] sigma;		// Hyperprior on error term
 }
 
 transformed parameters {
@@ -46,7 +45,6 @@ transformed parameters {
 			for (k in 1:n)
 				for (l in 1:n)
 					lambda[n*(i-1)+k, n*(j-1)+l] <- Sigma[i, j] * R[k, l];
-	
 }
 
 model {
@@ -56,6 +54,6 @@ model {
 	alpha ~ multi_normal(zero_mn, lambda);	// lambda is Kronecker product of trait and phylo covariance matrices (see below)
 	beta ~ normal(0, 0.0001);
 	Sigma ~ inv_wishart(m + 1, 0.01 * Im);
-	epsilon ~ multi_normal(zero_mN, (sigma * sigma) * ImN);
+	epsilon ~ multi_normal(zero_mN, pow(sigma, 2.0) * ImN);
 	sigma ~ uniform(0, 100);
 }

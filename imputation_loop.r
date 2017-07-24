@@ -184,6 +184,31 @@ ggplot(subset(RMSE_data, trait == 'overall'), aes(x = RMSE, group=method, color=
   scale_y_continuous(expand=c(0,0)) +
   labs(x  = 'Root mean squared error')
 
-ggplot(subset(RMSE_data, trait != 'overall'), aes(x = method, y = RMSE)) +
+ggplot(subset(RMSE_data, trait != 'overall'), aes(x = method, y = RMSE,fill=method)) +
   geom_boxplot() + facet_wrap(~ trait, scales = 'free_y') +
+  labs(x = 'Imputation method', y = 'Root mean squared error') +theme_bw()+ggtitle("Comparison of methods by trait (n=87)") +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "none")
+
+
+
+load('/home/jay/Desktop/shorter/stan_rmse_object.r')
+
+mice_RMSEs <- mice_RMSEs[summary_numbers, ]
+rphylo_RMSEs <- rphylo_RMSEs[summary_numbers, ]
+
+library(reshape2)
+mice_RMSEs_long <- melt(mice_RMSEs, value.name = 'RMSE', variable.name =
+                          'trait')
+rphylo_RMSEs_long <- melt(rphylo_RMSEs, value.name = 'RMSE',
+                          variable.name = 'trait')
+stan_RMSEs_long <- melt(stan_RMSEs, value.name = 'RMSE', variable.name =
+                          'trait')
+
+RMSE_data <- rbind(data.frame(method = 'MICE', mice_RMSEs_long),
+                   data.frame(method = 'Rphylopars', rphylo_RMSEs_long),
+                   data.frame(method = 'Hierarchical', stan_RMSEs_long))
+
+ggplot(subset(RMSE_data, trait == 'overall'), aes(x = method, y = RMSE)) +
+  geom_boxplot() +
   labs(x = 'Imputation method', y = 'Root mean squared error')
+

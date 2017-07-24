@@ -32,7 +32,7 @@ training_aggr = aggr(miceLogTraining[,-1], col=mdc(1:2), numbers=TRUE, sortVars=
 sort(sapply(miceLogTraining, function(x) sum(is.na(x))), decreasing = FALSE)
 
 
-init = mice(miceLogTraining,maxit=50,method="pmm")
+init = mice(data_training,maxit=50,method="pmm")
 meth = init$method
 predM = init$predictorMatrix
 set.seed(103)
@@ -60,16 +60,16 @@ true_traits <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TR
 plot(x = training[,-1], y = imputed[,-1])
 
 # Dataframe with comparison of values.
-comparisondf <- data.frame(imputed_trait =(imputed_traits[is_missing]),
+comparisondf_mice <- data.frame(imputed_trait =(imputed_traits[is_missing]),
                            imputed_variance = (imputed_variances[is_missing]),
                            true_trait = log(true_traits[-1][is_missing]),
                            trait_id = col(is_missing)[is_missing],  # Vector of column numbers with missing data 
                            species_id = row(is_missing)[is_missing])
 
 # Convert species_id to actual species name by retrieving index from comparisondf
-for (i in 1:length(comparisondf$species_id)){
+for (i in 1:length(comparisondf_mice$species_id)){
   #speciesName <- vector(mode = "double", length = length(comparisondf$species_id))
-  speciesName <- ordered_trait_data$species[comparisondf$species_id] 
+  speciesName <- ordered_trait_data$species[comparisondf_mice$species_id] 
 }
 
 traitNames <- c('1'='Bark thickness', '2'='Wood density', '3'='SLA','4' = 'Plant height','5' = 'Plant lifespan','6' = 'Seed dry mass')
@@ -79,7 +79,7 @@ traitNames <- c('1'='Bark thickness', '2'='Wood density', '3'='SLA','4' = 'Plant
 library(ggplot2)
 library(cowplot)
 
-all_traits <- ggplot(comparisondf, aes(x = speciesName)) + facet_wrap(~ trait_id, scales = 'free',labeller = labeller(trait_id = traitNames)) +
+all_traits <- ggplot(comparisondf_mice, aes(x = speciesName)) + facet_wrap(~ trait_id, scales = 'free',labeller = labeller(trait_id = traitNames)) +
   geom_pointrange(aes(y = imputed_trait, 
                       ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
@@ -88,10 +88,11 @@ all_traits <- ggplot(comparisondf, aes(x = speciesName)) + facet_wrap(~ trait_id
   ggtitle("Imputations with 95% CI at 5% Missing Values using Training Dataset\n") +
   labs( x = "Species names", y = "Trait values") 
 
+all_traits
 
 
 mice_cdf <-data.frame(known=double(99),imputed=double(99))
 test <-training[,-1]
 mice_cdf$known <- test[missing]
 imputed <- imputed[,-1]
-mice_cdf$imputed <- imputed[missin]g
+mice_cdf$imputed <- imputed[missing]

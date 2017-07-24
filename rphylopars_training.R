@@ -43,7 +43,7 @@ log_training <- training
 log_training[,-1] <- log(log_training[,-1])
 
 # Remove values from log_Training
-missingLogTraining <- removeValues(log_training, proportion = 0.2)
+missingLogTraining <- removeValues(log_training, proportion = 0.25)
 
 ## Change first column names to 'species'
 colnames(missingLogTraining)[colnames(missingLogTraining) == 'Scientific_Name'] <- 'species'
@@ -53,7 +53,7 @@ missingLogTraining<- transform(missingLogTraining, species = gsub('\\ ', '_', sp
 # Show number of NA's in each trait column
 colSums(is.na(missingLogTraining[,2:7]))
 
-phy_training_OU <- phylopars(missingLogTraining,test_tree,model='OU')
+phy_training_OU <- phylopars(data_training,test_tree,model='OU')
 
 
 ####################################################################################
@@ -116,14 +116,16 @@ traitNames <- c('1'='Bark thickness', '2'='Wood density', '3'='SLA','4' = 'Plant
 library(ggplot2)
 library(cowplot)
 
-all_traits <- ggplot(comparisondf, aes(x = speciesName)) + facet_wrap(~ trait_id, scales = 'free',labeller = labeller(trait_id = traitNames)) +
+plot_rphylopars <- ggplot(comparisondf, aes(x = species_id)) + facet_wrap(~ trait_id, scales = 'free',labeller = labeller(trait_id = traitNames)) +
   geom_pointrange(aes(y = imputed_trait, 
                       ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
   geom_point(aes(y = true_trait), color = 'red', shape = 19) + theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),plot.title = element_text(hjust = 0.5))+
-  ggtitle("Imputations with 95% CI at 5% Missing Values using Training Dataset\n") +
-  labs( x = "Species names", y = "Trait values") 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),plot.title = element_text(hjust = 0.5,size=32))+
+  ggtitle("Imputations with 95% CI at 25% Missing Values using Phylogenetic Method\n") +
+  labs( x = "Species id", y = "Trait values") 
+
+plot_rphylopars
 
 ### Trait #1 (Bark thickness) graph
 g1 <- ggplot(data = comparisondf[comparisondf$trait_id==1,],aes(x = speciesName[comparisondf$trait_id == 1])) + 

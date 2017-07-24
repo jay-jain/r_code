@@ -1,7 +1,5 @@
-comparisondf$delta <- abs((comparisondf$true_trait - comparisondf$imputed_trait)/comparisondf$true_trait)
 
-
-mice_rmse_graph <- function(dat, n_iter) {
+mice_rmse_per <- function(dat, n_iter) {
   require(mice)
   init = mice(dat,maxit=50,method="pmm", print = FALSE)
   meth = init$method
@@ -44,28 +42,15 @@ mice_rmse_graph <- function(dat, n_iter) {
   return(comparisondf)
 }
 
+comparisondf_mice <- mice_rmse_per(data_training,100)
 
-imputed_list <-list()
-for (i in 1:length(missing_datasets)){
-  temp <- as.data.frame(missing_datasets[i])
-  imputed_list <- mice_rmse_graph(temp,100)
-}
+plot_mice <- ggplot(comparisondf_mice, aes(x = species_id)) + facet_wrap(~ trait_id, scales = 'free',labeller = labeller(trait_id = traitNames)) +
+  geom_pointrange(aes(y = imputed_trait, 
+                      ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
+                      ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
+  geom_point(aes(y = true_trait), color = 'red', shape = 19) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),plot.title = element_text(hjust = 0.5))+
+  ggtitle("Imputations with 95% CI at 25% Missing Values using MICE Method\n") +
+  labs( x = "Species id", y = "Trait values") + theme_bw() + theme(plot.title = element_text(hjust = 0.5,size=42),legend.position = "none",) 
 
-#comparison_df_list <- list(comparisondf1, comparisondf2)
-
-comparison_df_all <- do.call(cbind, as.data.frame(imputed_list))
-
-comparison_df_all <- as.data.frame(comparison_df_all)
-
-comparison_means <- comparison_df_all %>%
-  mutate(delta = abs((true_trait-imputed_trait)/imputed_trait)) %>%
-  group_by(trait_id, species_id) %>%
-  summarize(delta = mean(delta))
-
-colorRampPalette(c('navyblue','red'))(10)
-
-ggplot(comparison_means, aes(x=trait_id, y=species_id, fill=delta)) + 
-  geom_tile() + 
-  theme_bw() +
-  scale_fill_continuous(low='navyblue', high='red')+
-  scale_x_continuous(labels=c("Bark thickness","Wood density","SLA","Plant height","Plant lifespan","Seed dry mass"),breaks=1:6)
+plot_mice
