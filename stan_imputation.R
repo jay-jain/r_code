@@ -5,15 +5,15 @@
 
 library(rstan)
 
-trait_model <- stan_model(file = 'imputation/phylo_spatial_trait.stan') # Read from GitHub.
-traitmissing_model <- stan_model(file = 'imputation/phylo_spatial_missing.stan') # Throws a warning but still works!
+trait_model <- stan_model(file = '/home/jay/Desktop/research/imputation/phylo_spatial_trait.stan') # Read from GitHub.
+traitmissing_model <- stan_model(file = '/home/jay/Desktop/research/imputation/phylo_spatial_missing.stan') # Throws a warning but still works!
 
 # Step 2: Create list containing m,n,N,p,Y,X,Z,and R for model fit --------
 
 # Source script to load all the trait and predictor data from the nasabio space on the hpcc
-source('imputation/loadtraitsandpredictors.r')
+source('/home/jay/Desktop/research/imputation/loadtraitsandpredictors.r')
 
-source('imputation/makestandata.r')
+source('/home/jay/Desktop/research/imputation/makestandata.r')
 
 trait_data_list <- make_standatalist(traitdat = species_traits, predictors = species_covariates, phy = species_phylogeny, evolution_model = 'ou')
 

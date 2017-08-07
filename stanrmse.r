@@ -1,6 +1,6 @@
 # Test stan summary output
 
-summ4 <- read.csv('/home/jay/Desktop/summ_fit.csv', row.names = 1)
+summ4 <- read.csv('/home/jay/Desktop/r_code//summ_fit.csv', row.names = 1)
 
 
 # Loop through the list of loaded stan summaries and output a comparisondf for each one.

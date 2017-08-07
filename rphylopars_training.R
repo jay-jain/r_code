@@ -4,25 +4,32 @@
 #setwd("/home/jay/Desktop/")
 
 library(Rphylopars)
-#load("pnwphylo_potter.r")
+#load("/home/jay/Desktop/research/r_code/pnwphylo_potter.r")
 
 # Read in stevens dataphylogenetic tree
 library(ape)
-stevens_tree <-read.tree('/home/jay/Desktop/r_code/tree_all_final_031716.txt')
+stevens_tree <-collapse.singles(read.tree('/home/jay/Desktop/research/r_code/tree_all_final_031716.txt'))
 plot(stevens_tree)
 
 
-# geospatial
+# incldues geospatial data
 #fia_traitmeans <- read.csv('/home/jay/Desktop/try_location_trait_byobs.csv',head = TRUE, sep = ',', check.names = FALSE)
 
 # traitmeans
 #fia_traitmeans <- read.csv('/home/jay/Desktop/try_fia_traitmeans.csv',head = TRUE, sep = ',', check.names = FALSE)
 
 # stevens training dataset
-training <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
+training <- read.csv('/home/jay/Desktop/research/imputation/data/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
+
+# Take log of missingTraining
+training <- log(training[2:7])
+
+# Remove 25% of values at random
+missingTraining <- removeValues(training,0.25)
 
 ## Change first column names to 'species'
 colnames(missingTraining)[colnames(missingTraining) == 'Scientific_Name'] <- 'species'
+
 # change species names to same format as phylogenetic tree species' names (i.e. underscores between genus and species)
 missingTraining<- transform(training, species = gsub('\\ ', '_', species))
 
@@ -53,7 +60,8 @@ missingLogTraining<- transform(missingLogTraining, species = gsub('\\ ', '_', sp
 # Show number of NA's in each trait column
 colSums(is.na(missingLogTraining[,2:7]))
 
-phy_training_OU <- phylopars(data_training,test_tree,model='OU')
+
+phy_training_OU <- phylopars(missingLogTraining, test_tree,model='OU')
 
 
 ####################################################################################
@@ -93,7 +101,7 @@ imputed_traits <- phy_training_OU$anc_recon[1:83,] # Get only rows from existing
 imputed_variances <- phy_training_OU$anc_var[order(rownames(phy_training_OU$anc_var[1:83,])),] # Order the species names alphabetically
 ordered_trait_data <- phy_training_OU$trait_data[order(phy_training_OU$trait_data$species),] # Order trait data species names alphabetically
 is_missing <- is.na(ordered_trait_data[,-c(1)])
-true_traits <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
+true_traits <- read.csv('/home/jay/Desktop/research/imputation/data/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
 
 
 # Dataframe with comparison of values.
@@ -121,7 +129,7 @@ plot_rphylopars <- ggplot(comparisondf, aes(x = species_id)) + facet_wrap(~ trai
                       ymin = imputed_trait - 1.96 * sqrt(imputed_variance), 
                       ymax = imputed_trait + 1.96 * sqrt(imputed_variance))) +
   geom_point(aes(y = true_trait), color = 'red', shape = 19) + theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),plot.title = element_text(hjust = 0.5,size=32))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),plot.title = element_text(hjust = 0.5,size=24))+
   ggtitle("Imputations with 95% CI at 25% Missing Values using Phylogenetic Method\n") +
   labs( x = "Species id", y = "Trait values") 
 

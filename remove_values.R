@@ -1,4 +1,4 @@
-#training <- read.csv('/home/jay/Desktop/trait_stevens_training.csv',head = TRUE, sep = ',', check.names = FALSE, stringsAsFactors = FALSE)
+### This function removes values at random. Returns vector of weights for each value.
 
 removeValues <- function (dataframe, proportion, rowWeight, colWeight){
     # Remove the first column so species names do not get removed

@@ -26,9 +26,9 @@ RMSE_eachtrait <- function(df) {
 
 # 1. generate missing datasets --------------------------------------------
 
-source('/home/jay/Desktop/r_code/remove_values.R')
-source('/home/jay/Desktop/imputation/loadtraitsandpredictors.r')
-source('/home/jay/Desktop/imputation/makestandata.r')
+source('/home/jay/Desktop/research/r_code/remove_values.R')
+source('/home/jay/Desktop/research/imputation/loadtraitsandpredictors.r')
+source('/home/jay/Desktop/research/imputation/makestandata.r')
 
 # Log-transform trait data output by the above scripts (species_traits object with 64 species)
 
@@ -54,7 +54,7 @@ mice_rmse <- function(dat, n_iter) {
   init = mice(dat,maxit=50,method="pmm", print = FALSE)
   meth = init$method
   predM = init$predictorMatrix
-
+  
   imputed <- mice(data = dat, method="pmm", m=n_iter, predictorMatrix = predM, print = FALSE) 
   
   # Extract values from the mice object and calculate standard errors for confidence intervals.
@@ -97,7 +97,7 @@ mice_rmse <- function(dat, n_iter) {
 library(pbapply)
 mice_RMSEs <- pblapply(missing_datasets, mice_rmse, n_iter = 100) # Each of the 999 datasets will be imputed 100 times. Run time ~ 2 hours
 
-save(mice_RMSEs, file = '/home/jay/Desktop/miceRMSE.csv')
+save(mice_RMSEs, file = '/home/jay/Desktop/research/r_code/miceRMSE.csv')
 
 # 3. Run Rphylopars imputation on missing datasets ------------------------
 
@@ -140,13 +140,13 @@ for (i in 1:n_datasets) {
   rphylo_RMSEs[[i]] <- try(rphylopars_rmse(dat = missing_datasets[[i]],
                                            phy = species_phylogeny), TRUE)
   if (inherits(rphylo_RMSEs[[i]], 'try-error')) rphylo_RMSEs[[i]] <-
-      c('overall'=NA, 'Bark.thickness'=NA, 'Wood.density'=NA,
-        'Specific.leaf.area'=NA, 'Plant.height'=NA, 'Plant.lifespan'=NA,
-        'Seed.dry.mass'=NA)
+    c('overall'=NA, 'Bark.thickness'=NA, 'Wood.density'=NA,
+      'Specific.leaf.area'=NA, 'Plant.height'=NA, 'Plant.lifespan'=NA,
+      'Seed.dry.mass'=NA)
 }
 close(progressBar)
 
-save(rphylo_RMSEs, file = '/home/jay/Desktop/rphylo_RMSE.R')
+save(rphylo_RMSEs, file = '/home/jay/Desktop/research/r_code/rphylo_RMSE.R')
 
 # 4. load stan fits and get rmses from them -------------------------------
 
@@ -169,7 +169,7 @@ rphylo_RMSEs_long <- melt(rphylo_RMSEs, value.name = 'RMSE', variable.name = 'tr
 RMSE_data <- rbind(data.frame(method = 'MICE', mice_RMSEs_long),
                    data.frame(method = 'Rphylopars', rphylo_RMSEs_long))
 
-write.csv(RMSE_data, file = '/home/jay/Desktop/RMSE_data.csv', row.names = FALSE)
+write.csv(RMSE_data, file = '/home/jay/Desktop/research/r_code/RMSE_data.csv', row.names = FALSE)
 
 library(cowplot)
 
@@ -184,6 +184,7 @@ ggplot(subset(RMSE_data, trait == 'overall'), aes(x = RMSE, group=method, color=
   scale_y_continuous(expand=c(0,0)) +
   labs(x  = 'Root mean squared error')
 
+# RMSE comparison graph
 ggplot(subset(RMSE_data, trait != 'overall'), aes(x = method, y = RMSE,fill=method)) +
   geom_boxplot() + facet_wrap(~ trait, scales = 'free_y') +
   labs(x = 'Imputation method', y = 'Root mean squared error') +theme_bw()+ggtitle("Comparison of methods by trait (n=87)") +
